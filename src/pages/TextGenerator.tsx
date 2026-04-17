@@ -3,23 +3,31 @@ import { Copy, Check, Bookmark, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import PageShell from "@/components/PageShell";
 import { saveItem } from "@/lib/storage";
+import { useAppStore } from "@/store/appStore";
+import { generateText } from "@/services/gemini";
 
 const TextGenerator = () => {
-  const [prompt, setPrompt] = useState("");
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { prompt, result, loading, setPrompt, setResult, setLoading, syncSaved } =
+    useAppStore();
   const [copied, setCopied] = useState(false);
 
   const generate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      toast.error("Please enter a prompt");
+      return;
+    }
+
     setLoading(true);
     setResult("");
-    // Simulated generation
-    await new Promise((r) => setTimeout(r, 1500));
-    setResult(
-      `Here is a generated response for: "${prompt}"\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.`
-    );
-    setLoading(false);
+    try {
+      const generatedText = await generateText(prompt);
+      setResult(generatedText);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate text";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const copy = async () => {
@@ -29,7 +37,9 @@ const TextGenerator = () => {
   };
 
   const save = () => {
+    if (!result.trim()) return;
     saveItem({ type: "text", prompt, result });
+    syncSaved();
     toast.success("Saved to your collection");
   };
 

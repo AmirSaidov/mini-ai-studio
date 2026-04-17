@@ -1,15 +1,20 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Trash2, Type, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import PageShell from "@/components/PageShell";
-import { getSavedItems, deleteItem, SavedItem } from "@/lib/storage";
+import { deleteItem } from "@/lib/storage";
+import { useAppStore } from "@/store/appStore";
 
 const SavedResults = () => {
-  const [items, setItems] = useState<SavedItem[]>(getSavedItems);
+  const { saved: items, syncSaved } = useAppStore();
+
+  useEffect(() => {
+    syncSaved();
+  }, [syncSaved]);
 
   const remove = (id: string) => {
     deleteItem(id);
-    setItems(getSavedItems());
+    syncSaved();
     toast("Item deleted");
   };
 

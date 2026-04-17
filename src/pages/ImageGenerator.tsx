@@ -3,21 +3,30 @@ import { Download, Bookmark, Loader2, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import PageShell from "@/components/PageShell";
 import { saveItem } from "@/lib/storage";
-
-const PLACEHOLDER = "https://images.unsplash.com/photo-1676299081847-824916de030a?w=512&h=512&fit=crop";
+import { useAppStore } from "@/store/appStore";
+import { generateImage } from "@/services/gemini";
 
 const ImageGenerator = () => {
-  const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { prompt, loading, setPrompt, setLoading, syncSaved } = useAppStore();
 
   const generate = async () => {
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      toast.error("Please enter a prompt");
+      return;
+    }
+
     setLoading(true);
     setImageUrl("");
-    await new Promise((r) => setTimeout(r, 2000));
-    setImageUrl(PLACEHOLDER);
-    setLoading(false);
+    try {
+      const generatedImageUrl = await generateImage(prompt);
+      setImageUrl(generatedImageUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate image";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const download = () => {
@@ -29,7 +38,9 @@ const ImageGenerator = () => {
   };
 
   const save = () => {
+    if (!imageUrl) return;
     saveItem({ type: "image", prompt, result: imageUrl });
+    syncSaved();
     toast.success("Saved to your collection");
   };
 
