@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import PageShell from "@/components/PageShell";
 import { saveItem } from "@/lib/storage";
 import { useAppStore } from "@/store/appStore";
-import { generateImage } from "@/services/mockAi";
+import { generateImage } from "@/services/aiApi";
 
 const ImageGenerator = () => {
   const [imageUrl, setImageUrl] = useState("");

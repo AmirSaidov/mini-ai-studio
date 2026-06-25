@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import PageShell from "@/components/PageShell";
 import { saveItem } from "@/lib/storage";
 import { useAppStore } from "@/store/appStore";
-import { generateText } from "@/services/mockAi";
+import { generateText } from "@/services/aiApi";
 
 const TextGenerator = () => {
   const { prompt, result, loading, setPrompt, setResult, setLoading, syncSaved } =
